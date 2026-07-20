@@ -155,6 +155,57 @@ Cada respuesta incluye una traza expandible ("Traza de orquestación") con las
 decisiones del supervisor, qué tool invocó cada especialista y qué devolvió
 el servidor MCP.
 
+## Despliegue en Streamlit Community Cloud (gratis)
+
+El proyecto se puede alojar gratis en
+[Streamlit Community Cloud](https://streamlit.io/cloud), que corre `app.py`
+directo desde este repo de GitHub. No requiere tarjeta ni servidor propio.
+
+### Pasos
+
+1. Entra a [streamlit.io/cloud](https://streamlit.io/cloud) e inicia sesión
+   con tu cuenta de GitHub (la misma cuenta `eduardobg`), autorizando el
+   acceso — como el repo es **privado**, asegúrate de darle permiso explícito
+   a Streamlit Cloud sobre este repositorio cuando te lo pida.
+2. Click **"Create app"** → elige desplegar desde un repo existente.
+3. Completa el formulario:
+   - **Repository**: `eduardobg/mcp-ecommerce-openrouter`
+   - **Branch**: `master`
+   - **Main file path**: `app.py`
+4. En **"Advanced settings" → "Secrets"**, pega (con tu key real):
+   ```toml
+   OPENROUTER_API_KEY = "sk-or-v1-..."
+   ```
+   `app/config.py` ya busca la key ahí automáticamente vía `st.secrets`, no
+   hace falta tocar código.
+5. Click **"Deploy"**. El primer arranque tarda unos minutos: instala
+   dependencias, construye la base SQLite desde el CSV y levanta el servidor
+   MCP interno.
+6. Abre la URL pública que te asigna Streamlit Cloud, usa "Validar modelo" en
+   la barra lateral y prueba una pregunta.
+
+*(Estos pasos requieren tu sesión de navegador/GitHub — no puedo ejecutarlos
+por ti, pero si algo falla puedes pegarme el log de Streamlit Cloud y te
+ayudo a diagnosticarlo.)*
+
+### Diferencias a vigilar frente a correrlo local
+
+- **Memoria compartida (1 GB)**: el tier gratis reparte esa RAM entre
+  Streamlit, el subproceso MCP y pandas/langchain/langgraph. Debería alcanzar
+  para las 30,000 filas del dataset, pero es la primera sospecha si ves
+  errores de memoria.
+- **El subproceso del servidor MCP es el punto menos estándar de esta
+  arquitectura en un hosting gestionado**: la app lanza `mcp_server/server.py`
+  con `subprocess.Popen` bindeado a `127.0.0.1:8000` (puerto interno, nunca
+  expuesto afuera). Esto debería funcionar igual que localmente porque es
+  solo otro proceso dentro del mismo contenedor, pero si el indicador de
+  "Servidor MCP" en la barra lateral nunca queda en 🟢 tras desplegar, es la
+  primera pista a revisar.
+- **Sleep / cold start**: si la app no recibe tráfico por un tiempo,
+  Streamlit Cloud la "duerme"; el siguiente request tarda más porque
+  reconstruye la base SQLite y relanza el servidor MCP (es idempotente, solo
+  más lento la primera vez).
+
 ## Solución de problemas
 
 - **El servidor MCP no arranca / puerto 8000 ocupado**: usa "Reiniciar
@@ -162,7 +213,8 @@ el servidor MCP.
   proceso esté usando el puerto 8000 en tu máquina.
 - **Error 502 / `ResourceExhausted`**: ver la tabla de la sección "Elegir el
   modelo" — cambia de modelo.
-- **"Ingresa tu OPENROUTER_API_KEY..."**: falta configurar la key (paso 3).
+- **"Ingresa tu OPENROUTER_API_KEY..."**: falta configurar la key (paso 3 en
+  local, o el panel de Secrets en Streamlit Community Cloud).
 - **La app tarda en el primer arranque**: es normal — está construyendo la
   base SQLite (30,000 filas) y levantando el servidor MCP la primera vez.
 
