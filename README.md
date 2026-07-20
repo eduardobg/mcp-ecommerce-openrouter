@@ -8,6 +8,12 @@ Adaptacion del notebook de clase *"MCP → LangChain → LangGraph → Multiagen
 en Google Colab"* (Sesion 4, curso de integracion de LLM), conservando el
 patron **supervisor + especialistas**.
 
+**🚀 Demo en vivo**: https://mcp-ecommerce-openrouter-rxnwtctxnnnvpexy5bqvvp.streamlit.app/
+> Si el link pide iniciar sesión en vez de abrir la app directamente, es que
+> el acceso de la app en Streamlit Community Cloud todavía está restringido
+> a viewers específicos — hay que cambiarlo a público desde el dashboard de
+> [share.streamlit.io](https://share.streamlit.io) (App → Settings → Sharing).
+
 ## Arquitectura
 
 ```
