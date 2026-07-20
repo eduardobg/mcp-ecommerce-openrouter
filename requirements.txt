@@ -1,0 +1,9 @@
+streamlit
+fastmcp
+langchain-core
+langchain-openai
+langchain-mcp-adapters
+langgraph
+pandas
+pydantic
+requests
